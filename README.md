@@ -1,2 +1,2 @@
 # graphql
-Turn a service into a GraphQL API by calling one function.
+Turn an Angel service into a GraphQL API by calling one function.
