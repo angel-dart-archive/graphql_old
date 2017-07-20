@@ -11,6 +11,10 @@ main() async {
     app.all('/graphql', graphQLHTTP('api/todos', graphiql: false));
     app.after.add(() => throw new AngelHttpException.notFound());
 
+    var todoService = app.service('api/todos');
+    await todoService
+        .create({'text': 'Clean your room!', 'completed': true});
+
     app.errorHandler =
         (AngelHttpException e, RequestContext req, ResponseContext res) async {
       res
