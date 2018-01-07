@@ -30,6 +30,7 @@ main() async {
     return app;
   }, [
     new Glob('lib/**/*.dart'),
+    new Glob('lib/*.dart'),
   ]);
 
   var server = await hot.startServer(InternetAddress.LOOPBACK_IP_V4, 3000);

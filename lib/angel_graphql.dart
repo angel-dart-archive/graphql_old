@@ -12,7 +12,7 @@ final ContentType graphQlContentType =
 final Validator graphQlPostBody = new Validator({
   'query*': isNonEmptyString,
   'operationName': isNonEmptyString,
-  'variables': isMap
+  'variables': predicate((v) => v == null || v is Map),
 });
 
 /// Mounts a GraphQL API that queries the [Service] at the given [servicePath].
