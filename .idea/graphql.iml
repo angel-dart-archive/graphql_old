@@ -5,8 +5,6 @@
       <excludeFolder url="file://$MODULE_DIR$/.pub" />
       <excludeFolder url="file://$MODULE_DIR$/.tmp" />
       <excludeFolder url="file://$MODULE_DIR$/build" />
-      <excludeFolder url="file://$MODULE_DIR$/example/packages" />
-      <excludeFolder url="file://$MODULE_DIR$/packages" />
       <excludeFolder url="file://$MODULE_DIR$/temp" />
       <excludeFolder url="file://$MODULE_DIR$/tmp" />
     </content>
@@ -20,5 +18,9 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="Dart SDK" level="project" />
     <orderEntry type="library" name="Dart Packages" level="project" />
+    <orderEntry type="library" name="react.production" level="application" />
+    <orderEntry type="library" name="graphiql" level="application" />
+    <orderEntry type="library" name="fetch" level="application" />
+    <orderEntry type="library" name="react-dom.production" level="application" />
   </component>
 </module>

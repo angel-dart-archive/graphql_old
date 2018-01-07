@@ -4,6 +4,7 @@ import 'package:angel_validate/angel_validate.dart';
 import 'package:graphql/graphql.dart';
 import 'package:graphql_parser/graphql_parser.dart';
 import 'package:graphql_schema/graphql_schema.dart';
+import 'package:resource/resource.dart';
 
 final ContentType graphQlContentType =
     new ContentType('application', 'graphql');
@@ -26,6 +27,7 @@ RequestHandler graphQLHTTP(Pattern servicePath,
   GraphQL _graphql;
   Service _service;
   bool _showGraphiql = graphiql;
+  var graphiqlTemplate = new Resource('package:angel_graphql/src/graphiql.html');
 
   return (RequestContext req, ResponseContext res) async {
     if (req.method != 'GET' && req.method != 'POST')
@@ -43,16 +45,27 @@ RequestHandler graphQLHTTP(Pattern servicePath,
     _showGraphiql ??= !req.app.isProduction;
 
     if (req.method == 'GET') {
-      // Use `uri.queryParameters` because `body_parser` can't handle this.
-      if (req.uri.queryParameters.containsKey('query')) {
-        queryDoc =
-            new Parser(scan(req.uri.queryParameters['query'])).parseDocument();
-      } else if (_showGraphiql) {
-        // TODO: GraphiQL
-        return 'graphiql';
+      if (!req.accepts(graphQlContentType.mimeType, strict: true)) {
+        if (graphiql != true)
+          throw new AngelHttpException.badRequest();
+        else {
+          res.headers['content-type'] = 'text/html';
+          await graphiqlTemplate.openRead().pipe(res);
+          return false;
+        }
       } else {
-        throw new AngelHttpException.badRequest(
-            message: 'Expected "query" in the request query string.');
+        // Use `uri.queryParameters` because `body_parser` can't handle this.
+        if (req.uri.queryParameters.containsKey('query')) {
+          queryDoc =
+              new Parser(scan(req.uri.queryParameters['query']))
+                  .parseDocument();
+        } else if (_showGraphiql) {
+          // TODO: GraphiQL
+          return 'graphiql';
+        } else {
+          throw new AngelHttpException.badRequest(
+              message: 'Expected "query" in the request query string.');
+        }
       }
     }
 
@@ -83,6 +96,8 @@ RequestHandler graphQLHTTP(Pattern servicePath,
     if (queryDoc == null) {
       // TODO: Throw error
     } else {
+      print(queryDoc.span.text);
+
       // TODO: Which data to query???
       return await _graphql.query(queryDoc);
     }

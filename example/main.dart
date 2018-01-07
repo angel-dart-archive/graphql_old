@@ -3,17 +3,21 @@ import 'dart:io';
 import 'package:angel_framework/angel_framework.dart';
 import 'package:angel_hot/angel_hot.dart';
 import 'package:angel_graphql/angel_graphql.dart';
+import 'package:glob/glob.dart';
+import 'package:logging/logging.dart';
+import 'pretty_logging.dart';
 
 main() async {
   var hot = new HotReloader(() async {
     var app = new Angel()..storeOriginalBuffer = true;
+    app.logger = new Logger.detached('angel')..onRecord.listen(prettyLog);
+
     app.use('/api/todos', new MapService());
-    app.all('/graphql', graphQLHTTP('api/todos', graphiql: false));
-    app.after.add(() => throw new AngelHttpException.notFound());
+    app.all('/graphql', graphQLHTTP('api/todos', graphiql: !app.isProduction));
+    app.use(() => throw new AngelHttpException.notFound());
 
     var todoService = app.service('api/todos');
-    await todoService
-        .create({'text': 'Clean your room!', 'completed': true});
+    await todoService.create({'text': 'Clean your room!', 'completed': true});
 
     app.errorHandler =
         (AngelHttpException e, RequestContext req, ResponseContext res) async {
@@ -23,19 +27,10 @@ main() async {
         ..end();
     };
 
-    app.fatalErrorStream.listen((e) {
-      stderr..writeln('FATAL: ${e.error}')..writeln(e.stack);
-      new Future.sync(() {
-        e.request.response..writeln('FATAL: ${e.error}')..writeln(e.stack);
-        return e.request.response.close();
-      }).catchError((res) {
-        // Whoops!
-        stderr.writeln('Couldn\'t set fatal message: $res');
-      });
-    });
-
     return app;
-  }, [Directory.current]);
+  }, [
+    new Glob('lib/**/*.dart'),
+  ]);
 
   var server = await hot.startServer(InternetAddress.LOOPBACK_IP_V4, 3000);
   print(
